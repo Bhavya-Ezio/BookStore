@@ -1,0 +1,53 @@
+import { Router } from "express";
+import { StatusCodes } from "http-status-codes";
+
+const router = Router();
+
+
+let validateEmail = (email) => {
+    !RegExp(/^[a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-zA-Z0-9]@[a-zA-Z0-9][-\.]{0,1}([a-zA-Z][-\.]{0,1})*[a-zA-Z0-9]\.[a-zA-Z0-9]{1,}([\.\-]{0,1}[a-zA-Z]){0,}[a-zA-Z0-9]{0,}$/i).test(email)
+}
+
+router.post("/signup", (req, res) => {
+    const { username, password, type, email } = req.body;
+    if (!username || typeof (username) !== String || !(username.length() >= 3 && username.length() <= 20)) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "Invalid Username format!",
+            success: false,
+        })
+    }
+    if (!password || typeof (password) !== String || !(password.length() >= 8 && password.length() <= 30)) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "Invalid Password format!",
+            success: false,
+        })
+    }
+    if (!type || (type.ToLowerCase() !== "buyer" && type.ToLowerCase() !== "seller")) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "Invalid type!",
+            success: false,
+        })
+    }
+    if (!email || !validateEmail(email)) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "Email not provided",
+            success: false,
+        })
+    }
+
+    let response = createUser(username, password, type, email);
+    return res.json(response).status(response.success ? StatusCodes.OK : StatusCodes.INTERNAL_SERVER_ERROR);
+})
+
+router.post("/login", (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "Username and password are required!",
+            success: false,
+        }).status(StatusCodes.BAD_REQUEST)
+    }
+    let response = loginUser(username, password);
+})
+
+export default router;
