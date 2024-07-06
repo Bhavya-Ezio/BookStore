@@ -1,58 +1,64 @@
 import bcrypt from "bcrypt";
-import { user } from "../Schemas/user_schema";
+import { user } from "../Schemas/user_schema.js";
 
-export const createUser = (username, password, type, email) => {
-    let existingUser = user.findOne({ email: email });
-    if (existingUser) {
-        return {
-            message: "Email exists",
-            success: false,
-        }
-    }
-    bcrypt.hash(password, 10, (err, hash) => {
-        if (err) {
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                message: "Error while hashing password",
+export const createUser = async (username, password, type, email) => {
+    try {
+        let existingUser = await user.findOne({ email: email });
+        if (existingUser) {
+            return {
+                message: "Email exists",
                 success: false,
-            })
+            }
         }
+        let hash = await bcrypt.hash(password, 10)
         let newUser = new user({
+            username: username,
             email: email,
             password: hash,
-            username: username,
             buyer: type === "buyer" ? true : false,
             seller: type === "seller" ? true : false,
             bookOwned: 0,
-            created: Date.now(),
+            createdAt: Date.now(),
             updatedAt: Date.now(),
         })
-        if (newUser) {
-            return {
-                message: "User created",
-                success: true,
-            }
-        }
-    })
-}
-
-export const loginUser = (username, password) => {
-    let u = user.findOne({ username: username });
-    if (!u) {
+        newUser = await newUser.save();
         return {
-            message: "Username does not exist",
+            message: "user created",
+            success: true,
+        }
+    } catch (error) {
+        return {
+            message: error.message,
             success: false,
         }
     }
-    bcrypt.compare(password, u.password, (err, result) => {
-        if (err) {
+}
+
+export const loginUser = async (username, password) => {
+    try {
+        let u = await user.findOne({ username: username });
+        if (!u) {
             return {
-                message: "Error while checking password",
+                message: "Username does not exist",
                 success: false,
             }
         }
-        return {
-            message: `${result}`,
-            success: true,
+        let response = await bcrypt.compare(password, u.password)
+        if (response) {
+            return {
+                message: "User found",
+                success: true,
+            }
         }
-    })
+        return {
+            message: "Incorrect password",
+            success: false,
+        }
+    } catch (error) {
+        console.log(error);
+        return {
+            message: error.message,
+            success: false,
+        }
+    }
 }

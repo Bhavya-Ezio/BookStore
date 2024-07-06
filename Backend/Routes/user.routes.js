@@ -1,45 +1,47 @@
-import { Router } from "express";
+import { Router, json } from "express";
 import { StatusCodes } from "http-status-codes";
+import { createUser, loginUser } from "../Controller/user.controllers.js";
 
 const router = Router();
+router.use(json());
 
 
 let validateEmail = (email) => {
-    !RegExp(/^[a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-zA-Z0-9]@[a-zA-Z0-9][-\.]{0,1}([a-zA-Z][-\.]{0,1})*[a-zA-Z0-9]\.[a-zA-Z0-9]{1,}([\.\-]{0,1}[a-zA-Z]){0,}[a-zA-Z0-9]{0,}$/i).test(email)
+    return !RegExp(/^[a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-zA-Z0-9]@[a-zA-Z0-9][-\.]{0,1}([a-zA-Z][-\.]{0,1})*[a-zA-Z0-9]\.[a-zA-Z0-9]{1,}([\.\-]{0,1}[a-zA-Z]){0,}[a-zA-Z0-9]{0,}$/i).test(email)
 }
 
-router.post("/signup", (req, res) => {
+router.post("/signup", async (req, res) => {
     const { username, password, type, email } = req.body;
-    if (!username || typeof (username) !== String || !(username.length() >= 3 && username.length() <= 20)) {
+    if (!username || typeof (username) !== "string" || !(username.length >= 3 && username.length <= 20)) {
         return res.status(StatusCodes.BAD_REQUEST).json({
             message: "Invalid Username format!",
             success: false,
         })
     }
-    if (!password || typeof (password) !== String || !(password.length() >= 8 && password.length() <= 30)) {
+    if (!password || typeof (password) !== "string" || !(password.length >= 8 && password.length <= 30)) {
         return res.status(StatusCodes.BAD_REQUEST).json({
             message: "Invalid Password format!",
             success: false,
         })
     }
-    if (!type || (type.ToLowerCase() !== "buyer" && type.ToLowerCase() !== "seller")) {
+    if (!type || (type !== "buyer" && type !== "seller")) {
         return res.status(StatusCodes.BAD_REQUEST).json({
             message: "Invalid type!",
             success: false,
         })
     }
-    if (!email || !validateEmail(email)) {
+    if (!email || validateEmail(email)) {
         return res.status(StatusCodes.BAD_REQUEST).json({
-            message: "Email not provided",
+            message: "Invalid Email Format!",
             success: false,
         })
     }
 
-    let response = createUser(username, password, type, email);
+    let response = await createUser(username, password, type, email);
     return res.json(response).status(response.success ? StatusCodes.OK : StatusCodes.INTERNAL_SERVER_ERROR);
 })
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(StatusCodes.BAD_REQUEST).json({
@@ -47,7 +49,8 @@ router.post("/login", (req, res) => {
             success: false,
         }).status(StatusCodes.BAD_REQUEST)
     }
-    let response = loginUser(username, password);
+    let response = await loginUser(username, password);
+    return res.json(response).status(response.success ? StatusCodes.OK : StatusCodes.INTERNAL_SERVER_ERROR);
 })
 
 export default router;

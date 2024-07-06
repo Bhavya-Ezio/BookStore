@@ -1,7 +1,7 @@
 import express from "express";
 import * as mongoose from "mongoose"
 import cors from "cors";
-import userRoute from "./Routes/user.routes";
+import userRoute from "./Routes/user.routes.js";
 let app = express();
 
 app.use(cors());
