@@ -36,7 +36,12 @@ const userSchema = mongoose.Schema({
     updatedAt: {
         type: Date,
         required: true,
+    },
+    verified:{
+        type: Boolean,
+        default: false,
     }
 })
 
-export const user = mongoose.model("users", userSchema);
+const user = mongoose.model("users", userSchema);
+export default user;

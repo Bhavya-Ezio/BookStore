@@ -19,6 +19,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "http-status-codes": "^2.3.0",
-    "mongoose": "^8.4.4"
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.4",
+    "nodemailer": "^6.9.14",
+    "uuid": "^10.0.0"
   }
 }

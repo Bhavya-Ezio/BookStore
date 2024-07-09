@@ -1,6 +1,7 @@
 import { Router, json } from "express";
 import { StatusCodes } from "http-status-codes";
 import { createUser, loginUser } from "../Controller/user.controllers.js";
+import jwt from "jsonwebtoken";
 
 const router = Router();
 router.use(json());
@@ -50,7 +51,8 @@ router.post("/login", async (req, res) => {
         }).status(StatusCodes.BAD_REQUEST)
     }
     let response = await loginUser(username, password);
-    return res.json(response).status(response.success ? StatusCodes.OK : StatusCodes.INTERNAL_SERVER_ERROR);
+    let accessToken = jwt.sign(response.id, process.env.ACCESS_TOKEN_SECRET);
+    return res.cookie("accessToken",accessToken).json(response.resData).status(response.resData.success ? StatusCodes.OK : StatusCodes.INTERNAL_SERVER_ERROR);
 })
 
 export default router;
