@@ -5,8 +5,8 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-import userVerification from '../Schemas/user_verification_schema.js';
-import user from '../Schemas/user_schema.js';
+import userVerification from '../Schemas/userVerification.schema.js';
+import user from '../Schemas/user.schema.js';
 import { join } from 'path';
 import bcrypt from 'bcrypt';
 

@@ -51,8 +51,16 @@ router.post("/login", async (req, res) => {
         }).status(StatusCodes.BAD_REQUEST)
     }
     let response = await loginUser(username, password);
-    let accessToken = jwt.sign(response.id, process.env.ACCESS_TOKEN_SECRET);
-    return res.cookie("accessToken",accessToken).json(response.resData).status(response.resData.success ? StatusCodes.OK : StatusCodes.INTERNAL_SERVER_ERROR);
+    console.log();
+    if (response.success) {
+        let accessToken = jwt.sign(response.id, process.env.ACCESS_TOKEN_SECRET);
+        return res.cookie("accessToken", accessToken).json({
+            message: response.message,
+            success: true,
+        }).status(StatusCodes.OK);
+    } else {
+        return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
 })
 
 export default router;

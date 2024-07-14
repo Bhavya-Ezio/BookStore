@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
-import user from "../Schemas/user_schema.js";
+import user from "../Schemas/user.schema.js";
 import nm from "nodemailer";
 import { v4 as uuidv4 } from "uuid";
-import userVerification from '../Schemas/user_verification_schema.js';
+import userVerification from '../Schemas/userVerification.schema.js';
 
 const transport = nm.createTransport({
     service: "gmail",
@@ -95,12 +95,9 @@ export const loginUser = async (username, password) => {
         let response = await bcrypt.compare(password, u.password)
         if (response) {
             return {
-                resData: {
-                    message: "User found",
-                    success: true,
-                }, id: {
-                    id: u._id
-                }
+                message: "User found",
+                id: { id: u._id },
+                success: true,
             }
         }
         return {

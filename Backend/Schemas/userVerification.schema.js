@@ -13,7 +13,7 @@ const UserVerificationSchema = new Schema({
         type: Date,
         required: true,
         default: Date.now,
-        index: { expires: '3600' } // Expire after 6 hours (3600 seconds)
+        index: { expires: '21600' }
     },
 }
 )
