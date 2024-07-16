@@ -94,10 +94,17 @@ export const loginUser = async (username, password) => {
         }
         let response = await bcrypt.compare(password, u.password)
         if (response) {
-            return {
-                message: "User found",
-                id: { id: u._id },
-                success: true,
+            if (!u.verified) {
+                return {
+                    message: "Email not verified",
+                    success: false,
+                }
+            } else {
+                return {
+                    message: "User found",
+                    id: { id: u._id },
+                    success: true,
+                }
             }
         }
         return {
