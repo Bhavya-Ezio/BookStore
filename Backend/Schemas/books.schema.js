@@ -46,5 +46,5 @@ const booksSchema = mongoose.Schema({
         required: true,
     }
 })
-
+booksSchema.index({ name: 'text', author: 'text', description: 'text' });
 export default mongoose.model("books", booksSchema)

@@ -26,8 +26,8 @@ const userSchema = mongoose.Schema({
         default: false,
     },
     bookOwned: {
-        type: Number,
-        required: true,
+        type: Array,
+        default: [],
     },
     createdAt: {
         type: Date,
@@ -37,7 +37,7 @@ const userSchema = mongoose.Schema({
         type: Date,
         required: true,
     },
-    verified:{
+    verified: {
         type: Boolean,
         default: false,
     }

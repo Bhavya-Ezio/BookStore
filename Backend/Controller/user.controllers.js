@@ -63,11 +63,11 @@ export const createUser = async (username, password, type, email) => {
             password: hash,
             buyer: type === "buyer" ? true : false,
             seller: type === "seller" ? true : false,
-            bookOwned: 0,
             createdAt: Date.now(),
             updatedAt: Date.now(),
         })
         let verificationsRes = await sendVerificationEmail(newUser);
+        console.log(verificationsRes.success);
         if (verificationsRes.success) {
             newUser = await newUser.save();
             return {
