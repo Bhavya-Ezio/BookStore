@@ -15,14 +15,14 @@ router.post("/addBook", authenticateToken, isSeller, async (req, res) => {
     try {
         const { name, author, pages, price, description, ISBN, publicationDate, lang } = req.body;
 
-        if (!name || typeof name !== 'string') return res.json({ message: 'Invalid book name', success: fasle }).status(StatusCodes.BAD_REQUEST);
-        if (!author || typeof author !== 'string') return res.json({ message: 'Invalid book author', success: fasle }).status(StatusCodes.BAD_REQUEST);
-        if (!pages || typeof pages !== 'number') return res.json({ message: 'Invalid book pages', success: fasle }).status(StatusCodes.BAD_REQUEST);
-        if (!price || typeof price !== 'number') return res.json({ message: 'Invalid book price', success: fasle }).status(StatusCodes.BAD_REQUEST);
-        if (!description || typeof description !== 'string') return res.json({ message: 'Invalid book description', success: fasle }).status(StatusCodes.BAD_REQUEST);
-        if (!ISBN || typeof ISBN !== 'string') return res.json({ message: 'Invalid book ISBN', success: fasle }).status(StatusCodes.BAD_REQUEST);
-        if (!Date || !(publicationDate instanceof Date)) return res.json({ message: 'Invalid book publicationDate', success: fasle }).status(StatusCodes.BAD_REQUEST);
-        if (!lang || typeof lang !== 'string') return res.json({ message: 'Invalid book language', success: fasle }).status(StatusCodes.BAD_REQUEST);
+        if (!name || typeof name !== 'string') return res.json({ message: 'Invalid book name', success: false }).status(StatusCodes.BAD_REQUEST);
+        if (!author || typeof author !== 'string') return res.json({ message: 'Invalid book author', success: false }).status(StatusCodes.BAD_REQUEST);
+        if (!pages || typeof pages !== 'number') return res.json({ message: 'Invalid book pages', success: false }).status(StatusCodes.BAD_REQUEST);
+        if (!price || typeof price !== 'number') return res.json({ message: 'Invalid book price', success: false }).status(StatusCodes.BAD_REQUEST);
+        if (!description || typeof description !== 'string') return res.json({ message: 'Invalid book description', success: false }).status(StatusCodes.BAD_REQUEST);
+        if (!ISBN || typeof ISBN !== 'string') return res.json({ message: 'Invalid book ISBN', success: false }).status(StatusCodes.BAD_REQUEST);
+        if (!Date || !(publicationDate instanceof Date)) return res.json({ message: 'Invalid book publicationDate', success: false }).status(StatusCodes.BAD_REQUEST);
+        if (!lang || typeof lang !== 'string') return res.json({ message: 'Invalid book language', success: false }).status(StatusCodes.BAD_REQUEST);
 
         const reply = await createBook(name, author, pages, price, description, ISBN, publicationDate, lang);
         return res.json(reply).status(reply.success ? StatusCodes.OK : StatusCodes.INTERNAL_SERVER_ERROR)
@@ -60,7 +60,7 @@ router.get("/search/:search", authenticateToken, async (req, res) => {
                 { author: regExp },
                 { description: regExp }
             ]
-        })
+        }, { _id: 1, name: 1, author: 1 })
         return res.json({
             message: "data sent",
             success: true,
@@ -77,7 +77,23 @@ router.get("/search/:search", authenticateToken, async (req, res) => {
 router.get("/details/:bookID", authenticateToken, async (req, res) => {
     try {
         const bID = req.params.bookID;
-        const bookDetail = await Book.findOne({ _id: bID }, { _id: 0, __v: 0 });
+        const bookDetail = await Book.findOne({ _id: bID });
+        res.json({
+            message: "sent", success: true,
+            data: bookDetail
+        }).status(StatusCodes.OK);
+    } catch (error) {
+        res.json({
+            message: error.message,
+            success: false
+        }).status(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+})
+
+router.get("/details-sup/:bookID", authenticateToken, async (req, res) => {
+    try {
+        const bID = req.params.bookID;
+        const bookDetail = await Book.findOne({ _id: bID }).populate('supID', { username: 1 });
         res.json({
             message: "sent", success: true,
             data: bookDetail
@@ -94,16 +110,19 @@ router.post("/buy/:bookID", authenticateToken, isBuyer, async (req, res) => {
     try {
         const bID = req.params.bookID;
         const buyerID = req.user.id;
+        let user1 = await user.findOne({ _id: buyerID });
+        if (user1.bookOwned.includes(bID)) {
+            return res.json({
+                message: "User owns the book",
+                success: false
+            }).status(StatusCodes.BAD_REQUEST);
+        }
         const bRes = await Book.updateOne({
             _id: bID,
         }, {
             $inc: { sold: 1 }
-        })
-
-        const uRes = await user.updateOne({
-            _id: buyerID
-        }, { $push: { bookOwned: bID } })
-        if (uRes.modifiedCount && bRes.modifiedCount) {
+        });
+        if (bRes.modifiedCount) {
             res.json({
                 message: "Successfully bought",
                 success: true,

@@ -1,5 +1,4 @@
 import * as mongoose from "mongoose";
-import { stringify } from "uuid";
 
 const booksSchema = mongoose.Schema({
     name: {
@@ -44,6 +43,7 @@ const booksSchema = mongoose.Schema({
     supID: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
+        ref: "users",
     }
 })
 booksSchema.index({ name: 'text', author: 'text', description: 'text' });

@@ -7,11 +7,16 @@ import bookRoute from "./Routes/books.routes.js";
 
 let app = express();
 
-app.use(cors());
+app.use(
+    cors({
+        origin: "http://localhost:5173",
+        credentials: true
+    })
+);
 
 app.use("/user", userRoute)
-app.use("/verify",verifyRoute)
-app.use("/book",bookRoute)
+app.use("/verify", verifyRoute)
+app.use("/book", bookRoute)
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
     app.listen(process.env.PORT, () => {

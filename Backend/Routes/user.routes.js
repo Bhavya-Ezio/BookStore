@@ -13,6 +13,7 @@ let validateEmail = (email) => {
 
 router.post("/signup", async (req, res) => {
     const { username, password, type, email } = req.body;
+    console.log(req.body);
     if (!username || typeof (username) !== "string" || !(username.length >= 3 && username.length <= 20)) {
         return res.status(StatusCodes.BAD_REQUEST).json({
             message: "Invalid Username format!",
