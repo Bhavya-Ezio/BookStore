@@ -11,6 +11,10 @@ const router = Router();
 router.use(json());
 router.use(cookieparser())
 
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY);
+
 router.post("/addBook", authenticateToken, isSeller, async (req, res) => {
     try {
         const { name, author, pages, price, description, ISBN, publicationDate, lang } = req.body;
@@ -25,6 +29,8 @@ router.post("/addBook", authenticateToken, isSeller, async (req, res) => {
         if (!lang || typeof lang !== 'string') return res.json({ message: 'Invalid book language', success: false }).status(StatusCodes.BAD_REQUEST);
 
         const reply = await createBook(name, author, pages, price, description, ISBN, publicationDate, lang);
+
+        const analytics = createAnalytics(reply.bookId);
         return res.json(reply).status(reply.success ? StatusCodes.OK : StatusCodes.INTERNAL_SERVER_ERROR)
     } catch (error) {
         return res.json({
@@ -139,6 +145,40 @@ router.post("/buy/:bookID", authenticateToken, isBuyer, async (req, res) => {
             message: error.message,
             success: false
         }).status(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+})
+
+router.post('/create-checkout-session', authenticateToken, isBuyer, async (req, res) => {
+    try {
+        const { bookId } = req.body;
+        const book = await Book.findById(bookId);
+        console.log(book);
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'usd', // Replace with your supported currency
+                        unit_amount: Math.round(book.price * 100), // Convert price to cents
+                        product_data: {
+                            name: book.name,
+                        },
+                    },
+                    quantity: 1,
+                },
+            ],
+            mode: 'payment',
+            success_url: `${process.env.SERVER_URL}/success.html`,
+            cancel_url: `${process.env.SERVER_URL}/cancel.html`,
+        })
+        console.log(session.url);
+        // res.json({ url: session.url });
+        res.json({ message: "done" });
+    } catch (error) {
+        console.log(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: error.message,
+        })
     }
 })
 export default router;

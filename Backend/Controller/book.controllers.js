@@ -1,6 +1,7 @@
 import Book from '../Schemas/books.schema.js';
+import analytics from '../Schemas/analytics.schema.js';
 
-export const createBook = async (name, author, pages, price, description, ISBN, publicationDate, lang) => {
+const createBook = async (name, author, pages, price, description, ISBN, publicationDate, lang) => {
     try {
         const book = new Book({
             name: name,
@@ -17,6 +18,7 @@ export const createBook = async (name, author, pages, price, description, ISBN, 
         return {
             message: "Book created",
             success:true,
+            bookId: book._id,
         }
     } catch (error) {
         return {
@@ -25,3 +27,11 @@ export const createBook = async (name, author, pages, price, description, ISBN, 
         }
     }
 }
+
+const createAnalytics = (bookId) =>{
+    const bookAnalytics = new analytics({
+        bookId:bookId,
+    }) 
+}
+
+export {createBook};
