@@ -13,7 +13,9 @@ app.use(
         credentials: true
     })
 );
-
+app.get("/",(req,res)=>{
+    res.send("Welcome to home server");
+})
 app.use("/user", userRoute)
 app.use("/verify", verifyRoute)
 app.use("/book", bookRoute)
